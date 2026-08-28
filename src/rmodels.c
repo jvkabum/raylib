@@ -6137,11 +6137,10 @@ static Model LoadGLTF(const char *fileName)
                         }
                         else if (attribute->component_type == cgltf_component_type_r_32u)
                         {
-                            // Init raylib mesh indices to copy glTF attribute data
-                            model.meshes[meshIndex].indices = (unsigned short *)RL_MALLOC(attribute->count*sizeof(unsigned short));
-                            LOAD_ATTRIBUTE_CAST(attribute, 1, unsigned int, model.meshes[meshIndex].indices, unsigned short);
-
-                            TRACELOG(LOG_WARNING, "MODEL: [%s] Indices data converted from u32 to u16, possible loss of data", fileName);
+                            // Preserve glTF u32 indices to avoid truncating meshes with more than 65535 vertices
+                            model.meshes[meshIndex].indices32 = (unsigned int *)RL_MALLOC(attribute->count*sizeof(unsigned int));
+                            model.meshes[meshIndex].indexType = MESH_INDEX_UINT32;
+                            LOAD_ATTRIBUTE(attribute, 1, unsigned int, model.meshes[meshIndex].indices32)
                         }
                         else TRACELOG(LOG_WARNING, "MODEL: [%s] Indices data format not supported, use u16", fileName);
                     }
